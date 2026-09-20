@@ -1,5 +1,7 @@
 # GoodsMash Vaults
 
+[![tests](https://github.com/goodsmash/goodsmash-vaults/actions/workflows/tests.yml/badge.svg)](https://github.com/goodsmash/goodsmash-vaults/actions/workflows/tests.yml)
+
 Three small, self-contained Solidity contracts for **proving you are holding** and **trading between builders without coordination**.
 
 MIT licensed. No owner, no pause, no upgrade path, no fee — in any of them. That is the point, not an oversight: a lock that an operator can open is not a lock.

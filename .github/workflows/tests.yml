@@ -1,0 +1,40 @@
+name: tests
+
+# Runs the full suite on every push and pull request, so anyone reading this repo can see
+# the contracts pass rather than taking the README's word for it. The four suites are the
+# same ones described in the README: three behaviour suites plus the adversarial one that
+# deploys hostile collections and attacks the others.
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install
+        run: npm ci
+
+      - name: Compile
+        run: npx hardhat compile
+
+      - name: CommitmentVault
+        run: npx hardhat run test/commitment-vault.test.cjs
+
+      - name: TokenLocker
+        run: npx hardhat run test/token-locker.test.cjs
+
+      - name: DevBarter
+        run: npx hardhat run test/dev-barter.test.cjs
+
+      - name: Adversarial
+        run: npx hardhat run test/adversarial.test.cjs
