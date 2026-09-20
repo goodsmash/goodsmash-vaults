@@ -159,3 +159,53 @@ Built by **GoodsMash Rigs** — hand-dug minerals, onchain.
 If you found this useful, copy it, fork it, deploy your own; that is what it is here for. The
 credit line at the top of each contract is a thank-you, not a condition — the licence is MIT
 and you are free to do whatever you like with it.
+
+---
+
+## Why this exists at all
+
+Most of crypto's losses do not come from broken contracts. They come from two things:
+
+**1. You cannot tell who is holding.** A wallet address shows a balance. It does not show
+whether the person behind it intends to stay, and it cannot, because intent is not a number.
+What it CAN show is whether they have given something up to prove it.
+
+**2. Builders cannot trade with each other.** Two people ship a collection in the same week
+and never touch each other's work, because a trade means coordinating a time, a price and two
+signatures, and everyone is busy. So the two communities never overlap, and the "ecosystem"
+stays a list of launches instead of a network.
+
+These four contracts are a small attempt at both:
+
+| | The problem | What the contract does |
+|---|---|---|
+| `CommitmentVault` | you cannot prove you are holding | lock your own NFT 7-365 days. Anyone can read it. |
+| `TokenLocker` | "liquidity is locked" is a sentence, not a fact | lock LP or any ERC-20, and `lockedAmount(token)` returns a number |
+| `VestingVault` | a vesting schedule is a promise | linear release with arithmetic, and **no cancel function to take it back** |
+| `DevBarter` | a trade needs both people free at the same moment | both sign once; **anyone** submits it, so one side pays nothing |
+
+### The four rules all of them follow
+
+1. **No owner.** Not "the owner is a multisig" — there is no owner variable to compromise.
+2. **No pause.** A lock with an admin key is not a lock.
+3. **No fee.** There is no fee variable, so there is nothing to raise later.
+4. **Nothing can be swept.** Tokens can only ever go back to whoever locked them.
+
+A leaked key on any of these cannot take anything, because there is no function a key could
+call that moves someone else's asset. **That is the point.**
+
+### What these cannot do
+
+- **They cannot tell you whether a token is worth anything.** Anyone can lock garbage in ten
+  seconds. A lock proves *what* is locked, never *what it is worth*.
+- **They cannot stop a collection going bad.** A lock is a fact about one token, not a
+  character reference for its dev.
+- **They are not a way to trade onchain safely in general.** A signed trade is binding on the
+  terms it names; it is not escrow for an offchain promise.
+
+**If you copy one thing from here, copy the four rules.** The code is short enough to read in
+an afternoon, and the tests print every revert reason so you can see what each guard blocks.
+
+---
+
+*Built by one person with a disability and the agents he runs. No name on it on purpose.*
