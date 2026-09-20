@@ -1,0 +1,33 @@
+{
+  "name": "goodsmash-vaults",
+  "version": "1.0.0",
+  "description": "Three small Solidity contracts for proving you are holding, and trading between builders without coordination. MIT. No owner, no pause, no fee.",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat run test/commitment-vault.test.cjs && hardhat run test/token-locker.test.cjs && hardhat run test/dev-barter.test.cjs && hardhat run test/adversarial.test.cjs",
+    "test:vault": "hardhat run test/commitment-vault.test.cjs",
+    "test:locker": "hardhat run test/token-locker.test.cjs",
+    "test:barter": "hardhat run test/dev-barter.test.cjs",
+    "test:adversarial": "hardhat run test/adversarial.test.cjs",
+    "deploy:testnet": "hardhat run scripts/deploy-testnet.cjs"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "time-lock",
+    "nft",
+    "erc20",
+    "lp-lock",
+    "liquidity-lock",
+    "eip-712",
+    "nft-trading"
+  ]
+}
