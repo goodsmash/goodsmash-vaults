@@ -6,8 +6,9 @@ Three small, self-contained Solidity contracts for **proving you are holding** a
 
 MIT licensed. No owner, no pause, no upgrade path, no fee — in any of them. That is the point, not an oversight: a lock that an operator can open is not a lock.
 
-- **Tests:** 68 assertions passing across four suites, plus a 9-case adversarial suite
-- **Sizes:** CommitmentVault 4,822 B · DevBarter 6,701 B · TokenLocker 4,089 B (all under the 24,576 B limit)
+- **Tests:** 101 assertions passing across five suites, plus a 10-case adversarial suite
+- **Hardening:** `ReentrancyGuard` on every state-changing function, checks-effects-interactions
+  throughout, ERC-165 gate so `lock()` cannot be pointed at a non-NFT, and no unbounded loops
 - **Dependencies:** OpenZeppelin 5.x only
 - **Status:** written, compiled and fully tested. Not broadcast anywhere.
 
@@ -46,6 +47,25 @@ function lockedAmount(address token) external view returns (uint256);
 | Uniswap V2-style pair | ERC-20 | `TokenLocker` |
 | Uniswap V3 / V4 positions | ERC-721 | `CommitmentVault` |
 
+### `VestingVault.sol` — tokens that unlock gradually, and cannot be cancelled
+
+Fund a schedule for a beneficiary; it releases **linearly** from a cliff date. Anyone can
+trigger a claim and the payout always goes to the beneficiary, so a stranger can pay the gas.
+
+```solidity
+function create(address token, address beneficiary, uint256 amount,
+                uint16 durationDays, uint16 cliffDays, uint40 start) external returns (uint256);
+function claim(uint256 scheduleId) external returns (uint256);
+function vested(uint256 scheduleId) external view returns (uint256);
+function outstanding(address token) external view returns (uint256);
+```
+
+**Not revocable, deliberately.** There is no owner and no cancel function — a vesting schedule
+an operator can cancel is a promise, and this exists to replace promises with arithmetic.
+
+**Use it for:** team allocations, community drops that arrive over time, contributor grants.
+`outstanding(token)` makes "we are vested" a number rather than a claim.
+
 ### `DevBarter.sol` — two people sign, anyone submits
 
 EIP-712 signed NFT-for-NFT trades. Both parties sign the same terms; **anyone** can submit both signatures in one transaction and it settles atomically.
@@ -72,7 +92,9 @@ function isExecutable(Trade calldata t) external view returns (bool, string memo
 | Locks only get longer | `extend()` pushes the date out; nothing pulls it in |
 | No admin surface | No `owner()`, `pause()`, `sweep()`, `rescue()` or upgrade path in any contract |
 | Batches are atomic | One bad element reverts the whole call; no partial state |
-| Re-entrancy | Checks-effects-interactions everywhere (state is written before any transfer) |
+| Re-entrancy | `ReentrancyGuard` **and** checks-effects-interactions (state written before any transfer) |
+| Only real NFTs can be locked | An ERC-165 `supportsInterface` gate rejects anything that is not an ERC-721 |
+| No unbounded gas | Every loop is capped by a constant; `isLocked` is an O(1) mapping read, not a scan |
 | Signatures cannot be replayed | EIP-712 domain binds `chainId` + `verifyingContract`, plus a consumed-nonce check |
 
 ### ⚠️ One behaviour you must know
@@ -99,6 +121,7 @@ npm install
 npx hardhat compile
 npx hardhat run test/commitment-vault.test.cjs
 npx hardhat run test/token-locker.test.cjs
+npx hardhat run test/vesting-vault.test.cjs
 npx hardhat run test/dev-barter.test.cjs
 npx hardhat run test/adversarial.test.cjs
 ```

@@ -49,6 +49,14 @@ contract LyingReentrantERC721 {
 
     function isApprovedForAll(address, address) external pure returns (bool) { return true; }
 
+
+    // ERC-165: the hardened vault checks this before it will call ownerOf. An attacker who
+    // wants past that door implements it - a mock that does not would be stopped at the gate
+    // rather than at the attack, and the re-entry path would never be exercised.
+    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
+        return interfaceId == 0x80ac58cd || interfaceId == 0x01ffc9a7;
+    }
+
     function transferFrom(address, address, uint256) external {
         if (doReenter) {
             doReenter = false;

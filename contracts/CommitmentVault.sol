@@ -30,16 +30,25 @@ pragma solidity ^0.8.28;
  *   3. The unlock time can only ever be pushed LATER. extend() cannot shorten a lock.
  *   4. There is no code path that transfers a locked token anywhere except to its locker.
  */
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+interface IERC165Minimal {
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+}
+
 interface IERC721Minimal {
     function ownerOf(uint256 tokenId) external view returns (address);
     function transferFrom(address from, address to, uint256 tokenId) external;
 }
 
-contract CommitmentVault {
+contract CommitmentVault is ReentrancyGuard {
     /// @notice Allowed periods. A lock is always one of these; there is no custom duration.
     uint16 public constant MIN_DAYS = 7;
     uint16 public constant MAX_DAYS = 365;
     uint32 public constant MAX_LOCKS_PER_CALL = 20;
+    /// @dev ERC-165 id for ERC-721. Refusing anything else means lock() cannot be
+    ///      pointed at a contract that has no ownerOf.
+    bytes4 private constant ERC721_INTERFACE_ID = 0x80ac58cd;
 
     struct Lock {
         address collection; // the ERC-721 the token belongs to
@@ -54,6 +63,9 @@ contract CommitmentVault {
     mapping(address => uint256[]) private _byLocker;
     mapping(address => uint256) private _openByCollection;
     mapping(address => uint256) private _openTotal;
+    // O(1) view of which lock currently holds a given token (+1 so 0 means 'none').
+    // Replaces a loop that walked every lock ever created.
+    mapping(address => mapping(uint256 => uint256)) private _activeLock;
 
     event Locked(
         uint256 indexed lockId,
@@ -72,6 +84,7 @@ contract CommitmentVault {
     error StillLocked(uint40 unlockAt);
     error AlreadyWithdrawn();
     error NotAContract();
+    error NotERC721();
     error NothingToExtend();
 
     /**
@@ -79,8 +92,9 @@ contract CommitmentVault {
      * @dev Requires the vault be approved for this token first (approve or setApprovalForAll).
      *      Ownership is re-checked here, so approving early cannot be used against you.
      */
-    function lock(address collection, uint256 tokenId, uint16 periodDays) external returns (uint256 lockId) {
+    function lock(address collection, uint256 tokenId, uint16 periodDays) external nonReentrant returns (uint256 lockId) {
         if (collection.code.length == 0) revert NotAContract();
+        if (!_isERC721(collection)) revert NotERC721();
         if (periodDays < MIN_DAYS || periodDays > MAX_DAYS) revert BadPeriod();
         if (IERC721Minimal(collection).ownerOf(tokenId) != msg.sender) revert NotOwnerOfToken();
 
@@ -101,6 +115,7 @@ contract CommitmentVault {
         _byLocker[msg.sender].push(lockId);
         _openByCollection[collection] += 1;
         _openTotal[msg.sender] += 1;
+        _activeLock[collection][tokenId] = lockId + 1;
 
         emit Locked(lockId, msg.sender, collection, tokenId, periodDays, unlockAt);
     }
@@ -108,6 +123,7 @@ contract CommitmentVault {
     /// @notice Lock several of your own tokens, all for the same period, in one transaction.
     function lockMany(address[] calldata collections, uint256[] calldata tokenIds, uint16 periodDays)
         external
+        nonReentrant
         returns (uint256[] memory lockIds)
     {
         uint256 n = collections.length;
@@ -118,6 +134,7 @@ contract CommitmentVault {
         for (uint256 i = 0; i < n; i++) {
             address c = collections[i];
             if (c.code.length == 0) revert NotAContract();
+            if (!_isERC721(c)) revert NotERC721();
             if (IERC721Minimal(c).ownerOf(tokenIds[i]) != msg.sender) revert NotOwnerOfToken();
             IERC721Minimal(c).transferFrom(msg.sender, address(this), tokenIds[i]);
 
@@ -134,6 +151,7 @@ contract CommitmentVault {
             _byLocker[msg.sender].push(id);
             _openByCollection[c] += 1;
             _openTotal[msg.sender] += 1;
+            _activeLock[c][tokenIds[i]] = id + 1;
             lockIds[i] = id;
             emit Locked(id, msg.sender, c, tokenIds[i], periodDays, unlockAt);
         }
@@ -143,7 +161,7 @@ contract CommitmentVault {
      * @notice Make an existing lock longer. Never shorter.
      * @dev Same locker only. A lock can be extended as many times as you like.
      */
-    function extend(uint256 lockId, uint16 extraDays) external {
+    function extend(uint256 lockId, uint16 extraDays) external nonReentrant {
         Lock storage L = _locks[lockId];
         if (!L.open) revert AlreadyWithdrawn();
         if (L.locker != msg.sender) revert NotYourLock();
@@ -162,7 +180,7 @@ contract CommitmentVault {
      * @notice Withdraw your token once the period has ended.
      * @dev The token can only ever go to the locker recorded at lock time.
      */
-    function unlock(uint256 lockId) external {
+    function unlock(uint256 lockId) external nonReentrant {
         Lock storage L = _locks[lockId];
         if (!L.open) revert AlreadyWithdrawn();
         if (L.locker != msg.sender) revert NotYourLock();
@@ -171,12 +189,22 @@ contract CommitmentVault {
         L.open = false;
         _openByCollection[L.collection] -= 1;
         _openTotal[msg.sender] -= 1;
+        _activeLock[L.collection][L.tokenId] = 0;
 
         // the only transfer out of this contract, and the destination is read from the
         // lock itself - there is no parameter a caller could point anywhere else.
         IERC721Minimal(L.collection).transferFrom(address(this), L.locker, L.tokenId);
 
         emit Withdrawn(lockId, L.locker);
+    }
+
+    /// @dev ERC-165 probe, tolerant of contracts that do not implement it at all.
+    function _isERC721(address collection) private view returns (bool) {
+        try IERC165Minimal(collection).supportsInterface(ERC721_INTERFACE_ID) returns (bool ok) {
+            return ok;
+        } catch {
+            return false;
+        }
     }
 
     // ---------------------------------------------------------------- views
@@ -202,12 +230,9 @@ contract CommitmentVault {
     }
 
     /// @notice Whether a token is currently held by this vault under an open lock.
+    /// @dev O(1). An earlier version looped over every lock ever created, which becomes
+    ///      unusable at a few thousand locks.
     function isLocked(address collection, uint256 tokenId) external view returns (bool) {
-        uint256 n = _locks.length;
-        for (uint256 i = n; i > 0; i--) {
-            Lock storage L = _locks[i - 1];
-            if (L.open && L.collection == collection && L.tokenId == tokenId) return true;
-        }
-        return false;
+        return _activeLock[collection][tokenId] != 0;
     }
 }

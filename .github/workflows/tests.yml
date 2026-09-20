@@ -36,5 +36,8 @@ jobs:
       - name: DevBarter
         run: npx hardhat run test/dev-barter.test.cjs
 
+      - name: VestingVault
+        run: npx hardhat run test/vesting-vault.test.cjs
+
       - name: Adversarial
         run: npx hardhat run test/adversarial.test.cjs

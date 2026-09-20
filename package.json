@@ -5,11 +5,12 @@
   "license": "MIT",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat run test/commitment-vault.test.cjs && hardhat run test/token-locker.test.cjs && hardhat run test/dev-barter.test.cjs && hardhat run test/adversarial.test.cjs",
+    "test": "hardhat run test/commitment-vault.test.cjs && hardhat run test/token-locker.test.cjs && hardhat run test/vesting-vault.test.cjs && hardhat run test/dev-barter.test.cjs && hardhat run test/adversarial.test.cjs",
     "test:vault": "hardhat run test/commitment-vault.test.cjs",
     "test:locker": "hardhat run test/token-locker.test.cjs",
     "test:barter": "hardhat run test/dev-barter.test.cjs",
     "test:adversarial": "hardhat run test/adversarial.test.cjs",
+    "test:vesting": "hardhat run test/vesting-vault.test.cjs",
     "deploy:testnet": "hardhat run scripts/deploy-testnet.cjs"
   },
   "devDependencies": {

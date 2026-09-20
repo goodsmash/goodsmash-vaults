@@ -36,8 +36,9 @@ pragma solidity ^0.8.28;
  */
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract TokenLocker {
+contract TokenLocker is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint16 public constant MIN_DAYS = 7;
@@ -83,7 +84,7 @@ contract TokenLocker {
      * @notice Lock `amount` of `token` for `periodDays`.
      * @dev Pulls with safeTransferFrom, so the caller must have approved this contract first.
      */
-    function lock(address token, uint256 amount, uint16 periodDays) public returns (uint256 lockId) {
+    function lock(address token, uint256 amount, uint16 periodDays) public nonReentrant returns (uint256 lockId) {
         if (token.code.length == 0) revert NotAContract();
         if (amount == 0) revert BadAmount();
         if (periodDays < MIN_DAYS || periodDays > MAX_DAYS) revert BadPeriod();
@@ -112,6 +113,7 @@ contract TokenLocker {
     /// @notice Lock several tokens in one transaction. Atomic - one failure reverts all.
     function lockMany(address[] calldata tokens, uint256[] calldata amounts, uint16 periodDays)
         external
+        nonReentrant
         returns (uint256[] memory lockIds)
     {
         uint256 n = tokens.length;
@@ -123,7 +125,7 @@ contract TokenLocker {
     }
 
     /// @notice Make a lock longer. Never shorter. Same locker only.
-    function extend(uint256 lockId, uint16 extraDays) external {
+    function extend(uint256 lockId, uint16 extraDays) external nonReentrant {
         Lock storage L = _locks[lockId];
         if (!L.open) revert AlreadyWithdrawn();
         if (L.locker != msg.sender) revert NotYourLock();
@@ -137,7 +139,7 @@ contract TokenLocker {
     }
 
     /// @notice Withdraw after the period. The tokens can only go back to the locker.
-    function unlock(uint256 lockId) external {
+    function unlock(uint256 lockId) external nonReentrant {
         Lock storage L = _locks[lockId];
         if (!L.open) revert AlreadyWithdrawn();
         if (L.locker != msg.sender) revert NotYourLock();
