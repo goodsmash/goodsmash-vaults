@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+/*
+ * GoodsMash Rigs - thanks for using this.
+ * Built in the open at github.com/goodsmash/goodsmash-vaults
+ * Copy it, fork it, deploy your own - that is what it is here for.
+ */
+
 /**
  * @title CommitmentVault
  * @notice Lock YOUR OWN NFT for a fixed period, onchain, as public proof of commitment.

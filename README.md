@@ -124,3 +124,13 @@ The included deploy script is fail-closed: it asserts the live `chainId` before 
 **Why the lock proves nothing about value.** Contracts can verify that a token is held. They cannot verify it is worth anything. Any project that ranks or prices locked tokens is inventing a signal the chain does not support, so these contracts deliberately expose no such number.
 
 **Why `commitment-vault.test.cjs` asserts against the compiled ABI.** An earlier draft asserted with a source-text regex and matched an interface declaration, reporting a false failure on a contract with no transfer function. Assertions belong against the artifact that ships.
+
+---
+
+## Thanks for using this
+
+Built by **GoodsMash Rigs** — hand-dug minerals, onchain.
+
+If you found this useful, copy it, fork it, deploy your own; that is what it is here for. The
+credit line at the top of each contract is a thank-you, not a condition — the licence is MIT
+and you are free to do whatever you like with it.

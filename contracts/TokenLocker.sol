@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+/*
+ * GoodsMash Rigs - thanks for using this.
+ * Built in the open at github.com/goodsmash/goodsmash-vaults
+ * Copy it, fork it, deploy your own - that is what it is here for.
+ */
+
 /**
  * @title TokenLocker
  * @notice Lock ERC-20 tokens - including LP tokens - for a fixed period so anyone can verify

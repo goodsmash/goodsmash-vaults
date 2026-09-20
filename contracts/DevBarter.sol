@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+/*
+ * GoodsMash Rigs - thanks for using this.
+ * Built in the open at github.com/goodsmash/goodsmash-vaults
+ * Copy it, fork it, deploy your own - that is what it is here for.
+ */
+
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
