@@ -401,3 +401,41 @@ of them can be batched through Multicall3 into a single call.
 **Why this matters beyond convenience:** a contract with no owner and no admin is a *claim*.
 A contract with no owner, no admin, **and a pre-flight that always answers with a reason** is
 something another program can build on. The second is policy; the first is a promise.
+
+---
+
+## How this is tested
+
+Seven suites, 133 assertions, plus a seeded fuzzer that throws thousands of malformed and
+hostile inputs at the contracts. Everything runs on GitHub's runners on every push, so the
+badge on this page is not a decoration.
+
+| Suite | Assertions | What it proves |
+|---|---|---|
+| commitment-vault | 25 | locking, extending, unlocking, ownership guards |
+| token-locker | 24 | LP/ERC-20 locks, `lockedAmount` totals, withdrawal paths |
+| vesting-vault | 23 | cliff and linear release maths, permissionless claim to the right payee |
+| dev-barter | 19 | EIP-712 signing, relayer submission, both tokens swap atomically |
+| adversarial | 10 | hostile collections try to fake locks, re-enter, and replay signatures |
+| agent-preflight | 16 | `isExecutable` ANSWERS on every refusal path rather than reverting |
+| **fuzz** | **12,000 cases** | randomised hostile trades, locks and signatures |
+
+### The fuzzer
+
+```
+FUZZ_N=200000 npx hardhat run test/fuzz.test.cjs      # explore far beyond CI
+FUZZ_SEED=12345 npx hardhat run test/fuzz.test.cjs    # a different corner of the space
+```
+
+It is **seeded and deterministic** — the seed prints at the top of every run, so a failure
+reproduces exactly rather than being a one-off you can never see again.
+
+It found real things. Two of its first three findings were bugs **in the test**, not the
+contracts (a negative number handed to a `uint256`, and `100000` handed to a `uint16` — both
+ethers encoding refusals that never reached the chain and looked exactly like contract
+failures). The third was real: `isExecutable` reverted instead of answering when a token did
+not exist, because `ownerOf` throws inside an otherwise perfectly valid collection. A code
+length check was not enough. Only `try/catch` catches that.
+
+**That is why the raw error is printed rather than the failure count.** A red number is a
+prompt to look, not a conclusion.

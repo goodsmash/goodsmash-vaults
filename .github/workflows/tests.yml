@@ -54,5 +54,9 @@ jobs:
 
       # Randomised adversarial run. Seeded, so a failure reproduces exactly.
       # Raise the volume locally with: FUZZ_N=50000 npx hardhat run test/fuzz.test.cjs
+      # Randomised adversarial run. Seeded, so any failure reproduces exactly.
+      # 12,000 cases on every push. Raise it locally with: FUZZ_N=200000 npx hardhat run test/fuzz.test.cjs
       - name: Fuzz
+        env:
+          FUZZ_N: "12000"
         run: npx hardhat run test/fuzz.test.cjs
