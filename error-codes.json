@@ -1,0 +1,277 @@
+{
+ "0x6507689f": [
+  [
+   "CommitmentVault",
+   "AlreadyWithdrawn",
+   "AlreadyWithdrawn()"
+  ],
+  [
+   "TokenLocker",
+   "AlreadyWithdrawn",
+   "AlreadyWithdrawn()"
+  ]
+ ],
+ "0x7bdc76e2": [
+  [
+   "CommitmentVault",
+   "BadPeriod",
+   "BadPeriod()"
+  ],
+  [
+   "TokenLocker",
+   "BadPeriod",
+   "BadPeriod()"
+  ]
+ ],
+ "0x09ee12d5": [
+  [
+   "CommitmentVault",
+   "NotAContract",
+   "NotAContract()"
+  ],
+  [
+   "TokenLocker",
+   "NotAContract",
+   "NotAContract()"
+  ],
+  [
+   "VestingVault",
+   "NotAContract",
+   "NotAContract()"
+  ],
+  [
+   "DevBarter",
+   "NotAContract",
+   "NotAContract()"
+  ]
+ ],
+ "0x5444e56f": [
+  [
+   "CommitmentVault",
+   "NotERC721",
+   "NotERC721()"
+  ]
+ ],
+ "0x4c084f14": [
+  [
+   "CommitmentVault",
+   "NotOwnerOfToken",
+   "NotOwnerOfToken()"
+  ]
+ ],
+ "0x7d32173d": [
+  [
+   "CommitmentVault",
+   "NotYourLock",
+   "NotYourLock()"
+  ],
+  [
+   "TokenLocker",
+   "NotYourLock",
+   "NotYourLock()"
+  ]
+ ],
+ "0x4dc33c7a": [
+  [
+   "CommitmentVault",
+   "NothingToExtend",
+   "NothingToExtend()"
+  ],
+  [
+   "TokenLocker",
+   "NothingToExtend",
+   "NothingToExtend()"
+  ]
+ ],
+ "0x3ee5aeb5": [
+  [
+   "CommitmentVault",
+   "ReentrancyGuardReentrantCall",
+   "ReentrancyGuardReentrantCall()"
+  ],
+  [
+   "TokenLocker",
+   "ReentrancyGuardReentrantCall",
+   "ReentrancyGuardReentrantCall()"
+  ],
+  [
+   "VestingVault",
+   "ReentrancyGuardReentrantCall",
+   "ReentrancyGuardReentrantCall()"
+  ],
+  [
+   "DevBarter",
+   "ReentrancyGuardReentrantCall",
+   "ReentrancyGuardReentrantCall()"
+  ]
+ ],
+ "0x0f17c4da": [
+  [
+   "CommitmentVault",
+   "StillLocked",
+   "StillLocked(uint40)"
+  ],
+  [
+   "TokenLocker",
+   "StillLocked",
+   "StillLocked(uint40)"
+  ]
+ ],
+ "0x749b5939": [
+  [
+   "TokenLocker",
+   "BadAmount",
+   "BadAmount()"
+  ],
+  [
+   "VestingVault",
+   "BadAmount",
+   "BadAmount()"
+  ]
+ ],
+ "0x5274afe7": [
+  [
+   "TokenLocker",
+   "SafeERC20FailedOperation",
+   "SafeERC20FailedOperation(address)"
+  ],
+  [
+   "VestingVault",
+   "SafeERC20FailedOperation",
+   "SafeERC20FailedOperation(address)"
+  ]
+ ],
+ "0xf4db984e": [
+  [
+   "TokenLocker",
+   "TooManyLocks",
+   "TooManyLocks()"
+  ]
+ ],
+ "0x14dd605d": [
+  [
+   "VestingVault",
+   "BadCliff",
+   "BadCliff()"
+  ]
+ ],
+ "0x4d84c2e9": [
+  [
+   "VestingVault",
+   "BadDuration",
+   "BadDuration()"
+  ]
+ ],
+ "0x969bf728": [
+  [
+   "VestingVault",
+   "NothingToClaim",
+   "NothingToClaim()"
+  ]
+ ],
+ "0xf4ad9a1f": [
+  [
+   "DevBarter",
+   "BadExpiry",
+   "BadExpiry()"
+  ]
+ ],
+ "0x35abf5ae": [
+  [
+   "DevBarter",
+   "BadMakerSignature",
+   "BadMakerSignature()"
+  ]
+ ],
+ "0xa369aa70": [
+  [
+   "DevBarter",
+   "BadTakerSignature",
+   "BadTakerSignature()"
+  ]
+ ],
+ "0xb3512b0c": [
+  [
+   "DevBarter",
+   "InvalidShortString",
+   "InvalidShortString()"
+  ]
+ ],
+ "0x5e885439": [
+  [
+   "DevBarter",
+   "MakerNotOwner",
+   "MakerNotOwner()"
+  ]
+ ],
+ "0x77cddf27": [
+  [
+   "DevBarter",
+   "MismatchedSides",
+   "MismatchedSides()"
+  ]
+ ],
+ "0x1fb09b80": [
+  [
+   "DevBarter",
+   "NonceAlreadyUsed",
+   "NonceAlreadyUsed()"
+  ]
+ ],
+ "0xf2a1a85b": [
+  [
+   "DevBarter",
+   "SameAccount",
+   "SameAccount()"
+  ]
+ ],
+ "0x305a27a9": [
+  [
+   "DevBarter",
+   "StringTooLong",
+   "StringTooLong(string)"
+  ]
+ ],
+ "0x45d54384": [
+  [
+   "DevBarter",
+   "TakerNotOwner",
+   "TakerNotOwner()"
+  ]
+ ],
+ "0x748e67b2": [
+  [
+   "DevBarter",
+   "TooManyTokens",
+   "TooManyTokens()"
+  ]
+ ],
+ "0x78ef33c1": [
+  [
+   "DevBarter",
+   "TradeExpired",
+   "TradeExpired()"
+  ]
+ ],
+ "0x29ab51bf": [
+  [
+   "DeterministicDeployer",
+   "AlreadyDeployed",
+   "AlreadyDeployed(address)"
+  ]
+ ],
+ "0xf1a9a563": [
+  [
+   "DeterministicDeployer",
+   "DeployFailed",
+   "DeployFailed(bytes32)"
+  ]
+ ],
+ "0x1858b10b": [
+  [
+   "DeterministicDeployer",
+   "EmptyCode",
+   "EmptyCode()"
+  ]
+ ]
+}

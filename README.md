@@ -404,6 +404,26 @@ something another program can build on. The second is policy; the first is a pro
 
 ---
 
+
+### Receipts -> agent branches
+
+**[RECEIPTS.md](RECEIPTS.md)** maps every failure these contracts can produce to a decision a
+program can act on: the 4-byte selector, what it means, what a caller should DO, and whether
+retrying can ever help. All 30 selectors are verified against the compiled ABIs rather than
+written from memory.
+
+The distinction it draws that matters most:
+
+```
+ABORT    input or signer is wrong          retrying is wasted gas
+STOP     already done, or the offer died   retrying is wrong
+WAIT     time will fix it                  retrying later is correct
+INSPECT  a token or collection refused     the vault is fine; look at the counterparty
+```
+
+`StillLocked` carries the unlock timestamp as an argument, so a scheduler can read the number
+out of the revert and return at that exact time instead of polling.
+
 ## How this is tested
 
 Seven suites, 133 assertions, plus a seeded fuzzer that throws thousands of malformed and
