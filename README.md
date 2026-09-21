@@ -278,9 +278,16 @@ Live and verified: each address was read back with `eth_getCode` and answered it
 | `CommitmentVault` | `0x5E91368A6263997c81BB868Eb24AE0F432CebA0d` | 4,822 B |
 | `TokenLocker` | `0x0A16946C53De69187E63cf2Bc127619dF5Ad08D5` | 4,089 B |
 | `VestingVault` | `0x6247D1C620A96f36cE0e81d3bc5E549DfE10A87F` | 4,479 B |
-| `DevBarter` | `0x7D980EDe6839AD219c4b8DD9deE74DAEcA42A01B` | 6,701 B |
+| `DevBarter` | `0xD1B9CEb3921A9E96C3154aeAc52582cB3ab5e7D1` | 7,468 B |
 
 Explorer: `https://explorer.testnet.chain.robinhood.com/address/<address>`
+
+The `DevBarter` address was refreshed on 2026-09-21: the earlier testnet deployment
+(`0x7D980EDe6839AD219c4b8DD9deE74DAEcA42A01B`) predates the final `isExecutable` revision, so two
+of its failure paths (`not a contract`, `expiry beyond max window`) fell through to an empty
+revert instead of returning a reason. The current build answers every malformed input with
+`(false, "<reason>")`; the earlier address is superseded and kept here only as a historical
+record. `scripts/redeploy-devbarter-testnet.cjs` reproduces both behaviors side by side.
 
 **These are rehearsal deployments on a testnet, not mainnet, and the README says so on
 purpose.** Gas cost to deploy all four: **0.000045 tETH.**
