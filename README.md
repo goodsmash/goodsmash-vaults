@@ -276,3 +276,61 @@ purpose.** Gas cost to deploy all four: **0.000045 tETH.**
 
 **None yet.** Nothing here is on a mainnet. When it is, this section changes and nothing else
 does — the contracts do not need to.
+
+---
+
+## One address on every chain (the omnichain property, without a bridge)
+
+`DeterministicDeployer.sol` deploys any contract at **the same address on every EVM chain**.
+
+### Why that matters, concretely
+
+Deploy the same contract on ten chains and you normally get ten different addresses. A user who
+verified your address on one chain cannot recognise it on another, so they must re-verify by
+hand every time — and repeated *"just check this again"* is exactly the habit phishing erodes.
+**Ten addresses is ten chances to be fooled. One address is something a person can remember.**
+
+### How, in one paragraph
+
+CREATE2 (EIP-1014) derives an address from `keccak256(0xff ++ deployer ++ salt ++ keccak(code))`.
+**The chain id is not an input.** So if the deployer sits at the same address on two chains —
+which the universal factory at `0x4e59b44847b379578588920cA78FbF26c0B4956C` guarantees, verified
+present on both Robinhood Chain 4663 and 46630 — then the same salt and the same bytecode
+produce the same address on both. That is arithmetic, not trust.
+
+### Proven, not claimed
+
+```
+DeterministicDeployer  0xC67e76647385B6955C379C25489522B783B1a5c4   984 bytes
+
+predict() matched the EIP-1014 formula for all four contracts   ✅
+a real deployment landed at EXACTLY the predicted address        ✅
+and answered its own getters (MIN_DAYS 7, MAX_DAYS 365)          ✅
+
+CommitmentVault  0xbDFE455bEd4Fbd22de5EeabC5D06ad46509A3328
+TokenLocker      0x3975DB3810c2CbdbC8DEE001e217A2b667193cA4
+VestingVault     0x09f1984Fdcc1D04bE27bB5D5e40215E95E62aac2
+DevBarter        0xD562918BEfC8ccF4819617D95eb6De9b99c80C75
+```
+
+`predict(salt, initCode)` is a free read, so a frontend can show a user the address **before**
+they sign. "Trust me" is never required.
+
+### What this deliberately does not do
+
+**It does not share state.** A lock on one chain is not visible on another. That needs a bridge,
+and **cross-chain custody is refused on purpose** — bridges are the most-attacked component in
+the ecosystem, and adding one to prove honesty would introduce exactly the attack surface the
+honesty is meant to demonstrate.
+
+**Cross-chain READING is safe and is supported.** A dashboard can query each chain's RPC and
+merge the results offchain. **Reads can be aggregated without a bridge; writes cannot.** This
+design takes the first and refuses the second.
+
+### Design note: a 24x size fix
+
+An earlier draft embedded `type(X).creationCode` for every contract it deployed, making the
+deployer **23,787 bytes against the 24,576-byte EIP-170 limit** — 97% full with under 800 bytes
+of headroom, so adding a fifth contract would have bricked it. Accepting the creation code as
+calldata brought it to **991 bytes** and made it work for *any* contract, including ones that
+did not exist when it was written.

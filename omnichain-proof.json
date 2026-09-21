@@ -1,0 +1,28 @@
+{
+  "claim": "same deployer address + same salt + same bytecode => same address on EVERY EVM chain",
+  "basis": "EIP-1014: address = keccak256(0xff ++ deployer ++ salt ++ keccak256(code)); the chain id is not an input",
+  "deployer": "0xC67e76647385B6955c379C25489522B783B1a5c4",
+  "deployerChain": 46630,
+  "verifiedHere": 46630,
+  "predictMatchesFormula": true,
+  "deployedLandedAsPredicted": true,
+  "addresses": {
+    "CommitmentVault": "0xbDFE455bEd4Fbd22de5EeabC5D06ad46509A3328",
+    "TokenLocker": "0x3975DB3810c2CbdbC8DEE001e217A2b667193cA4",
+    "VestingVault": "0x09f1984Fdcc1D04bE27bB5D5e40215E95E62aac2",
+    "DevBarter": "0xD562918BEfC8ccF4819617D95eb6De9b99c80C75"
+  },
+  "salts": {
+    "CommitmentVault": "0x9c500b7ec4228c5ae434a86fccd8f6c079c469681ce925643173fa0bdc76631e",
+    "TokenLocker": "0xaf2eeddbd223a6cc46decd34a561b76075d3c1dfef6cd5c4c98252ce138c1700",
+    "VestingVault": "0xdcf5489f6adff4e9296fdcdd03949dd5353dd8399601bb68c1556e91b927c4af",
+    "DevBarter": "0x7d2df0a1e79dd68c5c9a9a62360ed693cb03f3db0ad24e284c17f7b4796e8663"
+  },
+  "bytes": {
+    "CommitmentVault": 4850,
+    "TokenLocker": 4117,
+    "VestingVault": 4543,
+    "DevBarter": 7617
+  },
+  "note": "The same deployer address exists on every chain via the universal CREATE2 factory 0x4e59b44847b379578588920cA78FbF26c0B4956C, verified present on Robinhood Chain 4663 and 46630."
+}
