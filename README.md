@@ -209,3 +209,70 @@ an afternoon, and the tests print every revert reason so you can see what each g
 ---
 
 *Built by one person with a disability and the agents he runs. No name on it on purpose.*
+
+---
+
+## Multichain, not omnichain — and why that distinction matters
+
+**These contracts contain no chain-specific code.** Verified, not asserted:
+
+```
+chain ids hardcoded in the source ................ none
+oracles, bridges, precompiles .................... none
+external dependencies ............................ OpenZeppelin only
+```
+
+**So the same bytecode deploys to any EVM chain unchanged.** Clone it, point `
+hardhat.config.js` at your chain, deploy. There is nothing to port and nothing to re-audit
+per chain. That is the multichain property, and it is free — it comes from having written
+nothing chain-specific, not from having added something.
+
+### "Omnichain" would require a bridge, and this does not use one
+
+There is a version of this project that would let a lock on one chain count on another. It
+would need a message-passing layer. **This deliberately does not have one**, because:
+
+- **Bridges are the most-attacked component in the entire ecosystem.** More value has been
+  lost to bridge exploits than to almost any other contract class.
+- **A lock does not need to be cross-chain to be useful.** "This wallet has not moved this
+  token for 180 days" is true on the chain it happened on, and anyone can check it there.
+- **Adding a bridge to prove honesty would introduce the exact attack surface the honesty is
+  meant to demonstrate.** A vault that can be emptied through a bridge message is worse than a
+  vault that is simply chain-local.
+
+**If you need cross-chain locks, deploy this on each chain independently.** You then have
+N honest locks instead of one lock plus a bridge. That is a better trade, and it is the honest
+one.
+
+### Where a shared state WOULD be needed, and the answer there
+
+A **registry** — one page listing what is locked across chains — needs to read many chains.
+That is a *read* problem, solvable by querying each chain's RPC and merging the results
+offchain. **Reads can be aggregated without a bridge; writes cannot.** So a cross-chain
+dashboard is achievable and safe, while cross-chain *custody* is neither. This design takes
+the first and refuses the second.
+
+---
+
+## Deployed
+
+### Robinhood Chain testnet — chain 46630
+
+Live and verified: each address was read back with `eth_getCode` and answered its own getters.
+
+| Contract | Address | Runtime |
+|---|---|---|
+| `CommitmentVault` | `0x5E91368A6263997c81BB868Eb24AE0F432CebA0d` | 4,822 B |
+| `TokenLocker` | `0x0A16946C53De69187E63cf2Bc127619dF5Ad08D5` | 4,089 B |
+| `VestingVault` | `0x6247D1C620A96f36cE0e81d3bc5E549DfE10A87F` | 4,479 B |
+| `DevBarter` | `0x7D980EDe6839AD219c4b8DD9deE74DAEcA42A01B` | 6,701 B |
+
+Explorer: `https://explorer.testnet.chain.robinhood.com/address/<address>`
+
+**These are rehearsal deployments on a testnet, not mainnet, and the README says so on
+purpose.** Gas cost to deploy all four: **0.000045 tETH.**
+
+### Mainnet
+
+**None yet.** Nothing here is on a mainnet. When it is, this section changes and nothing else
+does — the contracts do not need to.
