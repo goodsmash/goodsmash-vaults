@@ -51,3 +51,8 @@ jobs:
 
       - name: Agent preflight
         run: npx hardhat run test/agent-preflight.test.cjs
+
+      # Randomised adversarial run. Seeded, so a failure reproduces exactly.
+      # Raise the volume locally with: FUZZ_N=50000 npx hardhat run test/fuzz.test.cjs
+      - name: Fuzz
+        run: npx hardhat run test/fuzz.test.cjs
