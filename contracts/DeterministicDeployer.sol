@@ -1,9 +1,9 @@
+// SPDX-License-Identifier: MIT
 /*
  * GoodsMash Rigs - thanks for using this.
  * Built in the open at github.com/goodsmash/goodsmash-vaults
  * Copy it, fork it, deploy your own - that is what it is here for.
  */
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
 /**

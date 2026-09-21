@@ -2,7 +2,20 @@
 
 [![tests](https://github.com/goodsmash/goodsmash-vaults/actions/workflows/tests.yml/badge.svg)](https://github.com/goodsmash/goodsmash-vaults/actions/workflows/tests.yml)
 
-Three small, self-contained Solidity contracts for **proving you are holding** and **trading between builders without coordination**.
+**Five small Solidity contracts** for proving you are holding, locking liquidity, vesting over
+time, and trading between builders without coordination — plus a deployer that puts every one of
+them at **the same address on every EVM chain**.
+
+| Contract | Lines | What it does |
+|---|---|---|
+| `CommitmentVault` | 238 | Lock your own ERC-721 for 7–365 days as public proof |
+| `VestingVault` | 215 | Release tokens on arithmetic over time. No cancel function |
+| `DevBarter` | 210 | EIP-712 signed trades. Both sign, anyone submits, one side pays no gas |
+| `TokenLocker` | 195 | Lock LP or any ERC-20 for 7–1460 days. `lockedAmount(token)` is a read |
+| `DeterministicDeployer` | 99 | One address on every chain, via CREATE2 — no bridge |
+
+**957 lines of Solidity. 191 assertions. No owner, no pause, no fee, no sweep — verified by grep,
+not by copy.** The three files under `AdversaryMocks.sol` exist to attack the other five.
 
 MIT licensed. No owner, no pause, no upgrade path, no fee — in any of them. That is the point, not an oversight: a lock that an operator can open is not a lock.
 
