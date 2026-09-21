@@ -347,3 +347,57 @@ deployer **23,787 bytes against the 24,576-byte EIP-170 limit** — 97% full wit
 of headroom, so adding a fifth contract would have bricked it. Accepting the creation code as
 calldata brought it to **991 bytes** and made it work for *any* contract, including ones that
 did not exist when it was written.
+
+---
+
+## Using this from an agent
+
+These contracts were built to be read by software before a human signs anything. Three
+properties make that possible, and all three are testable:
+
+**1. Every failure is a machine-readable reason, not a string in a log.**
+40 custom errors across the contracts, so a revert decodes to a 4-byte selector an agent
+can branch on:
+
+```
+lock() with a non-contract collection
+  raw revert data : 0x09ee12d5
+  decoded name    : NotAContract
+```
+
+**2. `DevBarter.isExecutable(terms)` is a true pre-flight check.**
+
+It takes **TERMS ONLY — no signatures** — so an agent can ask "would this execute?" before
+anything is signed, at zero gas and with no wallet. It **never reverts**: every failure path
+returns `(false, reason)` with one of 11 distinct reasons.
+
+```
+invalid                 -> (false, "expired")
+invalid                 -> (false, "maker token does not exist")
+valid                   -> (true, "ok")
+```
+
+That property is enforced by its own suite (`test/agent-preflight.test.cjs`, 16 assertions)
+which asserts on every refusal path that the call **answers rather than throws**. Getting
+there required `try/catch` around each `ownerOf`: a code-length guard is not enough, because
+`ownerOf` on a **nonexistent** token reverts inside a perfectly real collection.
+
+**3. Verify what you are about to sign.**
+
+```
+tradeDigest(terms)  -> bytes32   the exact hash the signature covers
+offerHash(terms)    -> bytes32
+nonceUsed(addr, n)  -> bool      replay check
+executed()          -> uint256   already-settled check
+```
+
+An agent can compute the digest, compare it to the payload it was handed, and refuse if they
+disagree — without trusting the caller.
+
+**Reading state is safe and cheap.** `isLocked`, `lockAt`, `locksOf`, `openLocksOf`,
+`lockedAmount`, `timeRemaining`, `claimable`, `vested`, `outstanding` are all `view`, so any
+of them can be batched through Multicall3 into a single call.
+
+**Why this matters beyond convenience:** a contract with no owner and no admin is a *claim*.
+A contract with no owner, no admin, **and a pre-flight that always answers with a reason** is
+something another program can build on. The second is policy; the first is a promise.

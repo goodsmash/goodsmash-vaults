@@ -185,26 +185,61 @@ contract DevBarter is EIP712, ReentrancyGuard {
     // ------------------------------------------------------------------ views
 
     /// @notice True if this exact trade can still be executed right now.
+    /// @notice Would these trade terms execute right now?
+    /// @dev    NEVER REVERTS. Every failure path returns (false, reason) with a
+    ///         machine-readable reason, including a collection that is not a contract and
+    ///         a malformed trade whose sides disagree in length. That property is the
+    ///         point: an agent can call this as a pre-flight check and branch on the
+    ///         result without also writing a revert handler. Takes TERMS ONLY - no
+    ///         signatures - so it can be asked before anything is signed, costs no gas,
+    ///         and needs no wallet.
     function isExecutable(Trade calldata t) external view returns (bool executable, string memory reason) {
+        // --- time -------------------------------------------------------------
         if (t.expiry <= block.timestamp) return (false, "expired");
+        if (t.expiry > block.timestamp + MAX_OFFER_WINDOW) return (false, "expiry beyond max window");
+
+        // --- replay and identity ----------------------------------------------
         if (nonceUsed[t.maker][t.nonce]) return (false, "cancelled or already used");
         if (t.maker == t.taker) return (false, "same account");
+        if (t.maker == address(0) || t.taker == address(0)) return (false, "zero account");
 
+        // --- shape ------------------------------------------------------------
         uint256 m = t.makerCollections.length;
         uint256 k = t.takerCollections.length;
         if (m == 0 || k == 0 || m > MAX_TOKENS_PER_SIDE || k > MAX_TOKENS_PER_SIDE) {
             return (false, "bad side length");
         }
+        // collections and ids are separate arrays, so a malformed trade can disagree
+        // about how many tokens a side is offering
+        if (m != t.makerTokenIds.length) return (false, "maker side length mismatch");
+        if (k != t.takerTokenIds.length) return (false, "taker side length mismatch");
+
+        // --- ownership, without ever reverting --------------------------------
+        // ownerOf() on a code-less address reverts with no data, which would turn this
+        // pre-flight into an unanswerable question. Check for code first.
         for (uint256 i = 0; i < m; i++) {
-            if (IERC721(t.makerCollections[i]).ownerOf(t.makerTokenIds[i]) != t.maker) {
-                return (false, "maker no longer owns a token");
+            address c = t.makerCollections[i];
+            if (c.code.length == 0) return (false, "maker collection is not a contract");
+            // try/catch, because ownerOf on a NONEXISTENT token reverts (ERC721NonexistentToken).
+            // The code-length guard above does not catch that - a real collection with a bad
+            // token id still throws. This is the only way to catch a revert from another
+            // contract, and without it the "never reverts" promise is false.
+            try IERC721(c).ownerOf(t.makerTokenIds[i]) returns (address owner) {
+                if (owner != t.maker) return (false, "maker no longer owns a token");
+            } catch {
+                return (false, "maker token does not exist");
             }
         }
         for (uint256 i = 0; i < k; i++) {
-            if (IERC721(t.takerCollections[i]).ownerOf(t.takerTokenIds[i]) != t.taker) {
-                return (false, "taker no longer owns a token");
+            address c = t.takerCollections[i];
+            if (c.code.length == 0) return (false, "taker collection is not a contract");
+            try IERC721(c).ownerOf(t.takerTokenIds[i]) returns (address owner) {
+                if (owner != t.taker) return (false, "taker no longer owns a token");
+            } catch {
+                return (false, "taker token does not exist");
             }
         }
+
         return (true, "ok");
     }
 }
